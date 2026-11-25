@@ -1393,6 +1393,18 @@ section[id]{scroll-margin-top:84px}
   var hdr = $('#hdr'), sbar = $('#sbar'), progBar = $('#progBar');
   var docMax = 1, scrollQueued = false;
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  /* the intro event popup covers the hero — hold its entrance until it closes */
+  var gate = false, gateQueue = [];
+  try {
+    gate = sessionStorage.getItem('mfez_event_seen') !== '1' && localStorage.getItem('mfez_event_hide') !== todayKey();
+  } catch (e) { gate = false; }
+  function afterIntro(fn) { if (gate) gateQueue.push(fn); else fn(); }
+  function releaseIntro() {
+    if (!gate) return;
+    gate = false;
+    var q = gateQueue.splice(0);
+    setTimeout(function () { q.forEach(function (f) { try { f(); } catch (e) {} }); }, 140);
+  }
   function measureDoc() { docMax = Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
   function paintScroll() {
     scrollQueued = false;
@@ -1439,6 +1451,11 @@ section[id]{scroll-margin-top:84px}
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
+        if (en.target.classList.contains('hero-copy') && gate) {
+          io.unobserve(en.target);
+          afterIntro(function () { enterGroup(en.target); });
+          return;
+        }
         if (en.target.classList.contains('stagger')) enterGroup(en.target);
         else en.target.classList.add('in');
         io.unobserve(en.target);
@@ -1487,6 +1504,8 @@ section[id]{scroll-margin-top:84px}
   if (termSvg) {
     if (reduce) {
       drawChart();
+    } else if (gate) {
+      afterIntro(drawChart);
     } else if ('IntersectionObserver' in window && termWrap) {
       var tio = new IntersectionObserver(function (es) {
         es.forEach(function (e) {
@@ -1578,6 +1597,7 @@ section[id]{scroll-margin-top:84px}
     if (!m) return;
     m.classList.remove('open');
     m.setAttribute('aria-hidden', 'true');
+    if (m.id === 'modal-event') releaseIntro();
     if (!document.querySelector('.modal.open')) document.body.style.overflow = '';
   }
   document.addEventListener('click', function (e) {
@@ -1616,11 +1636,14 @@ section[id]{scroll-margin-top:84px}
     try { hidden = localStorage.getItem('mfez_event_hide') === todayKey(); } catch (e) {}
     if (!seen && !hidden) {
       setTimeout(function () {
-        if (document.querySelector('.modal.open')) return;
+        if (document.querySelector('.modal.open')) { releaseIntro(); return; }
         try { sessionStorage.setItem('mfez_event_seen', '1'); } catch (e) {}
         openModal('event');
       }, 1800);
     }
+    setTimeout(function () {
+      if (!document.querySelector('.modal.open')) releaseIntro();
+    }, 8000);
   }
   document.addEventListener('click', function (e) {
     var go = e.target.closest('[data-go]');
