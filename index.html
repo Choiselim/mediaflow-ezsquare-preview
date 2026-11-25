@@ -27,6 +27,7 @@
   --up:#E5372B; --dn:#3B7BD6;
   --amber:#D8A64B;
   --ease:cubic-bezier(.22,1,.36,1);
+  --ease2:cubic-bezier(.16,1,.3,1);
   --shadow:0 40px 80px -46px rgba(0,0,0,.95);
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -77,6 +78,8 @@ section[id]{scroll-margin-top:84px}
 .hdr{position:sticky;top:0;z-index:70;background:rgba(10,13,18,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transition:border-color .2s,background .2s}
 .hdr.scrolled{background:rgba(8,11,16,.98);border-bottom-color:#252D39}
 .hdr-in{display:flex;align-items:center;gap:30px;height:68px}
+.prog{position:absolute;left:0;right:0;bottom:-1px;height:2px;overflow:hidden;pointer-events:none;background:rgba(229,55,43,.13)}
+.prog i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#C82B20 0%,var(--red) 55%,#FF7B6C 100%);transform:scaleX(0);transform-origin:0 50%;box-shadow:0 0 9px rgba(229,55,43,.65)}
 .logo{display:flex;align-items:center;gap:10px;flex:0 0 auto}
 .logo-mark{width:30px;height:30px;border-radius:6px;background:var(--red);color:#fff;font-size:11.5px;font-weight:900;display:grid;place-items:center;letter-spacing:-.04em}
 .logo-txt{font-size:15px;font-weight:700;letter-spacing:-.04em;color:#fff;white-space:nowrap}
@@ -207,7 +210,7 @@ section[id]{scroll-margin-top:84px}
 .cmp-row .k{color:var(--mut);font-weight:500;border-right:1px solid var(--line)}
 .cmp-row .a{color:#7C8593;justify-content:flex-end;border-right:1px solid var(--line)}
 .cmp-row .b{justify-content:flex-end;font-weight:800;color:#fff;background:rgba(229,55,43,.07);box-shadow:inset 2px 0 0 rgba(229,55,43,.55)}
-.cmp-row.head{background:#0F141C;min-height:42px}
+.cmp-row.head{background:#0F141C;min-height:42px;margin-bottom:0;max-width:none}
 .cmp-row.head>div{font-size:11.5px;font-weight:700;color:var(--mut2);letter-spacing:0;padding-top:12px;padding-bottom:12px}
 .cmp-row.head .b{color:#FF8C80;background:rgba(229,55,43,.09);font-size:11.5px}
 .cmp-row.head .a{color:var(--mut2)}
@@ -434,13 +437,67 @@ section[id]{scroll-margin-top:84px}
 .ev-today input:checked::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:2px solid #fff;border-top:0;border-left:0;transform:rotate(45deg)}
 
 /* ============ motion ============ */
-.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+/* scroll reveal — 36px + micro scale, 0.65s ease-out-expo */
+.reveal{opacity:0;transform:translateY(36px) scale(.97);transition:opacity .65s var(--ease2),transform .65s var(--ease2);transition-delay:var(--rd,0ms)}
 .reveal.in{opacity:1;transform:none}
+.reveal-l{transform:translate(-46px,16px) scale(.98)}
+.reveal-r{transform:translate(46px,16px) scale(.98)}
+.reveal-l.in,.reveal-r.in{transform:none}
+
+/* staggered children (JS sets per-item transition-delay) */
+.stagger>*{opacity:0;transform:translateY(36px) scale(.97);transition:opacity .65s var(--ease2),transform .65s var(--ease2)}
+.stagger.in>*{opacity:1;transform:none}
+.stagger .from-l{transform:translate(-54px,0) scale(.98)}
+.stagger .from-r{transform:translate(54px,0) scale(.98)}
+.stagger.in .from-l,.stagger.in .from-r{transform:none}
+.hero-copy.stagger>*{transform:translateY(32px) scale(.985)}
+.hero-copy.stagger.in>*{transform:none}
+
+/* hero terminal chart — candles drawn left to right */
+.term-chart svg .grid{opacity:0;transition:opacity .55s ease}
+.term-chart svg .vlm{opacity:0;transform:translateY(10px);transition:opacity .45s var(--ease2),transform .45s var(--ease2);transition-delay:calc(var(--i,0) * 18ms + 90ms)}
+.term-chart svg .cdl{opacity:0;transform:translateY(11px);transition:opacity .5s var(--ease2),transform .5s var(--ease2);transition-delay:calc(var(--i,0) * 26ms + 210ms)}
+.term-chart svg .lastln{opacity:0;transition:opacity .7s ease;transition-delay:1.32s}
+.term-chart svg .lasttag,.term-chart svg .live{opacity:0;transition:opacity .6s var(--ease2);transition-delay:1.48s}
+.term-chart svg.is-drawn .grid,
+.term-chart svg.is-drawn .vlm,
+.term-chart svg.is-drawn .cdl,
+.term-chart svg.is-drawn .lastln,
+.term-chart svg.is-drawn .lasttag,
+.term-chart svg.is-drawn .live{opacity:1}
+.term-chart svg.is-drawn .vlm,.term-chart svg.is-drawn .cdl{transform:none}
+.term-chart svg .lasttag rect{animation:tagGlow 3.6s ease-in-out infinite;animation-delay:2.2s}
+.term-chart svg .glow{transform-box:fill-box;transform-origin:50% 50%;animation:halo 2.8s ease-out infinite;animation-delay:1.9s}
+@keyframes tagGlow{0%,100%{opacity:1}50%{opacity:.68}}
+@keyframes halo{0%{transform:scale(.5);opacity:.5}72%,100%{transform:scale(2.7);opacity:0}}
+/* quote tick flash */
+.tick{animation:tickflash .75s var(--ease2)}
+@keyframes tickflash{0%{opacity:.38;transform:translateY(2px)}100%{opacity:1;transform:none}}
+
+/* CTA sheen */
+.shine{position:relative;overflow:hidden}
+.shine::after{content:"";position:absolute;top:-45%;bottom:-45%;left:0;width:30%;pointer-events:none;background:linear-gradient(100deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.27) 50%,rgba(255,255,255,0) 100%);transform:translateX(-440%) skewX(-18deg);animation:sheen 7.4s var(--ease) infinite;animation-delay:1.4s}
+@keyframes sheen{0%{transform:translateX(-440%) skewX(-18deg)}34%{transform:translateX(450%) skewX(-18deg)}100%{transform:translateX(450%) skewX(-18deg)}}
+
+/* card hand-feel */
+.cell,.step,.panel{position:relative}
+.cells>.cell,.steps>.step,.safe>.panel{transition:opacity .65s var(--ease2),transform .65s var(--ease2),box-shadow .3s,background-color .3s,border-color .3s}
+.cell:hover,.step:hover,.panel:hover{transform:translateY(-4px);z-index:2;background-color:#121821;box-shadow:0 22px 44px -30px rgba(0,0,0,.95),inset 0 0 0 1px #3A4452;transition:transform .3s var(--ease2),box-shadow .3s,background-color .3s,border-color .3s}
+.btn:active{transform:translateY(1px)}
+/* section rule draws in */
+.reveal.head .rule{transform:scaleX(0);transform-origin:0 50%;transition:transform .75s var(--ease2) .12s}
+.reveal.head.in .rule{transform:none}
+
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes slidein{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition-duration:.01ms!important}
-  .reveal{opacity:1;transform:none}
+  .reveal,.reveal-l,.reveal-r{opacity:1;transform:none}
+  .stagger>*{opacity:1;transform:none}
+  .term-chart svg .grid,.term-chart svg .vlm,.term-chart svg .cdl,.term-chart svg .lastln,.term-chart svg .lasttag,.term-chart svg .live{opacity:1;transform:none}
+  .term-chart svg .glow{opacity:0}
+  .reveal.head .rule{transform:none}
+  .shine::after{display:none}
   html{scroll-behavior:auto}
 }
 
@@ -576,12 +633,13 @@ section[id]{scroll-margin-top:84px}
     </nav>
     <a href="#apply" class="btn btn-primary btn-sm">상담 신청</a>
   </div>
+  <div class="prog" aria-hidden="true"><i id="progBar"></i></div>
 </header>
 
 <!-- ============ hero ============ -->
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap hero-in">
-    <div class="hero-copy reveal">
+    <div class="hero-copy stagger">
       <span class="kicker">해외선물 · MetaTrader 5 정식 거래소</span>
       <h1 id="hero-title">해외선물 정식 거래소<span class="l2"><em>이지스퀘어</em><span class="x">×</span>미디어플로우</span></h1>
       <p class="hero-sub">
@@ -589,12 +647,12 @@ section[id]{scroll-margin-top:84px}
         <b>0.01계약</b>부터 시작하고, 계좌 개설부터 차트 세팅·첫 주문까지 담당 매니저와 함께하세요.
       </p>
       <ul class="hero-bens">
-        <li><b>$100</b><span>가입 크레딧</span></li>
-        <li><b>+5%</b><span>첫 거래 보너스</span></li>
+        <li><b><span class="num" data-count="100" data-pre="$">$100</span></b><span>가입 크레딧</span></li>
+        <li><b><span class="num" data-count="5" data-pre="+" data-suf="%">+5%</span></b><span>첫 거래 보너스</span></li>
         <li><b>0.01<i>계약</i></b><span>최소 주문 단위</span></li>
       </ul>
       <div class="hero-cta">
-        <a href="#apply" class="btn btn-primary btn-lg">이벤트 · 상담 신청</a>
+        <a href="#apply" class="btn btn-primary btn-lg shine">이벤트 · 상담 신청</a>
         <a href="https://www.metatrader5.com/ko/download" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-lg">MT5 설치 안내</a>
       </div>
       <div class="hero-stats">
@@ -623,7 +681,7 @@ section[id]{scroll-margin-top:84px}
           <span class="meta num">저 21,507.89</span>
         </div>
         <div class="term-chart"><svg viewBox="0 0 560 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="나스닥100 M15 캔들 차트 예시">
-<g stroke="#1C232C" stroke-width="1">
+<g class="grid" stroke="#1C232C" stroke-width="1">
 <line x1="6" y1="12.0" x2="506.0" y2="12.0"/>
 <line x1="6" y1="72.0" x2="506.0" y2="72.0"/>
 <line x1="6" y1="132.0" x2="506.0" y2="132.0"/>
@@ -637,115 +695,186 @@ section[id]{scroll-margin-top:84px}
 <line x1="454.5" y1="12" x2="454.5" y2="290"/>
 </g>
 <g>
-<rect x="9.9" y="271.3" width="7.0" height="18.7" fill="rgba(229,55,43,.32)"/>
-<rect x="24.6" y="271.6" width="7.0" height="18.4" fill="rgba(59,123,214,.32)"/>
-<rect x="39.3" y="285.3" width="7.0" height="4.7" fill="rgba(229,55,43,.32)"/>
-<rect x="54.0" y="281.4" width="7.0" height="8.6" fill="rgba(59,123,214,.32)"/>
-<rect x="68.7" y="275.3" width="7.0" height="14.7" fill="rgba(229,55,43,.32)"/>
-<rect x="83.4" y="278.8" width="7.0" height="11.2" fill="rgba(59,123,214,.32)"/>
-<rect x="98.1" y="262.4" width="7.0" height="27.6" fill="rgba(229,55,43,.32)"/>
-<rect x="112.8" y="265.1" width="7.0" height="24.9" fill="rgba(229,55,43,.32)"/>
-<rect x="127.5" y="285.8" width="7.0" height="4.2" fill="rgba(229,55,43,.32)"/>
-<rect x="142.2" y="263.9" width="7.0" height="26.1" fill="rgba(229,55,43,.32)"/>
-<rect x="156.9" y="285.8" width="7.0" height="4.2" fill="rgba(59,123,214,.32)"/>
-<rect x="171.6" y="281.7" width="7.0" height="8.3" fill="rgba(229,55,43,.32)"/>
-<rect x="186.3" y="275.3" width="7.0" height="14.7" fill="rgba(229,55,43,.32)"/>
-<rect x="201.0" y="272.7" width="7.0" height="17.3" fill="rgba(229,55,43,.32)"/>
-<rect x="215.7" y="269.5" width="7.0" height="20.5" fill="rgba(229,55,43,.32)"/>
-<rect x="230.4" y="262.4" width="7.0" height="27.6" fill="rgba(229,55,43,.32)"/>
-<rect x="245.1" y="283.0" width="7.0" height="7.0" fill="rgba(59,123,214,.32)"/>
-<rect x="259.9" y="272.3" width="7.0" height="17.7" fill="rgba(229,55,43,.32)"/>
-<rect x="274.6" y="271.3" width="7.0" height="18.7" fill="rgba(229,55,43,.32)"/>
-<rect x="289.3" y="277.9" width="7.0" height="12.1" fill="rgba(229,55,43,.32)"/>
-<rect x="304.0" y="267.0" width="7.0" height="23.0" fill="rgba(59,123,214,.32)"/>
-<rect x="318.7" y="272.0" width="7.0" height="18.0" fill="rgba(59,123,214,.32)"/>
-<rect x="333.4" y="273.0" width="7.0" height="17.0" fill="rgba(229,55,43,.32)"/>
-<rect x="348.1" y="280.0" width="7.0" height="10.0" fill="rgba(229,55,43,.32)"/>
-<rect x="362.8" y="265.5" width="7.0" height="24.5" fill="rgba(59,123,214,.32)"/>
-<rect x="377.5" y="276.6" width="7.0" height="13.4" fill="rgba(59,123,214,.32)"/>
-<rect x="392.2" y="286.4" width="7.0" height="3.6" fill="rgba(229,55,43,.32)"/>
-<rect x="406.9" y="274.7" width="7.0" height="15.3" fill="rgba(229,55,43,.32)"/>
-<rect x="421.6" y="262.4" width="7.0" height="27.6" fill="rgba(59,123,214,.32)"/>
-<rect x="436.3" y="280.6" width="7.0" height="9.4" fill="rgba(229,55,43,.32)"/>
-<rect x="451.0" y="284.8" width="7.0" height="5.2" fill="rgba(229,55,43,.32)"/>
-<rect x="465.7" y="283.6" width="7.0" height="6.4" fill="rgba(59,123,214,.32)"/>
-<rect x="480.4" y="272.3" width="7.0" height="17.7" fill="rgba(59,123,214,.32)"/>
-<rect x="495.1" y="282.0" width="7.0" height="8.0" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:0" x="9.9" y="271.3" width="7.0" height="18.7" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:1" x="24.6" y="271.6" width="7.0" height="18.4" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:2" x="39.3" y="285.3" width="7.0" height="4.7" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:3" x="54.0" y="281.4" width="7.0" height="8.6" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:4" x="68.7" y="275.3" width="7.0" height="14.7" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:5" x="83.4" y="278.8" width="7.0" height="11.2" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:6" x="98.1" y="262.4" width="7.0" height="27.6" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:7" x="112.8" y="265.1" width="7.0" height="24.9" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:8" x="127.5" y="285.8" width="7.0" height="4.2" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:9" x="142.2" y="263.9" width="7.0" height="26.1" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:10" x="156.9" y="285.8" width="7.0" height="4.2" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:11" x="171.6" y="281.7" width="7.0" height="8.3" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:12" x="186.3" y="275.3" width="7.0" height="14.7" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:13" x="201.0" y="272.7" width="7.0" height="17.3" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:14" x="215.7" y="269.5" width="7.0" height="20.5" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:15" x="230.4" y="262.4" width="7.0" height="27.6" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:16" x="245.1" y="283.0" width="7.0" height="7.0" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:17" x="259.9" y="272.3" width="7.0" height="17.7" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:18" x="274.6" y="271.3" width="7.0" height="18.7" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:19" x="289.3" y="277.9" width="7.0" height="12.1" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:20" x="304.0" y="267.0" width="7.0" height="23.0" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:21" x="318.7" y="272.0" width="7.0" height="18.0" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:22" x="333.4" y="273.0" width="7.0" height="17.0" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:23" x="348.1" y="280.0" width="7.0" height="10.0" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:24" x="362.8" y="265.5" width="7.0" height="24.5" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:25" x="377.5" y="276.6" width="7.0" height="13.4" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:26" x="392.2" y="286.4" width="7.0" height="3.6" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:27" x="406.9" y="274.7" width="7.0" height="15.3" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:28" x="421.6" y="262.4" width="7.0" height="27.6" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:29" x="436.3" y="280.6" width="7.0" height="9.4" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:30" x="451.0" y="284.8" width="7.0" height="5.2" fill="rgba(229,55,43,.32)"/>
+<rect class="vlm" style="--i:31" x="465.7" y="283.6" width="7.0" height="6.4" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:32" x="480.4" y="272.3" width="7.0" height="17.7" fill="rgba(59,123,214,.32)"/>
+<rect class="vlm" style="--i:33" x="495.1" y="282.0" width="7.0" height="8.0" fill="rgba(229,55,43,.32)"/>
 </g>
-<g>
+<g class="cdl" style="--i:0">
 <line x1="13.4" y1="211.0" x2="13.4" y2="243.1" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="9.9" y="218.0" width="7.0" height="12.6" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:1">
 <line x1="28.1" y1="209.8" x2="28.1" y2="232.8" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="24.6" y="215.2" width="7.0" height="12.1" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:2">
 <line x1="42.8" y1="209.4" x2="42.8" y2="237.9" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="39.3" y="221.3" width="7.0" height="6.6" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:3">
 <line x1="57.5" y1="208.7" x2="57.5" y2="246.5" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="54.0" y="218.0" width="7.0" height="24.7" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:4">
 <line x1="72.2" y1="217.2" x2="72.2" y2="245.7" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="68.7" y="222.3" width="7.0" height="17.6" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:5">
 <line x1="86.9" y1="218.7" x2="86.9" y2="252.0" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="83.4" y="226.4" width="7.0" height="11.6" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:6">
 <line x1="101.6" y1="229.1" x2="101.6" y2="250.2" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="98.1" y="232.0" width="7.0" height="8.7" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:7">
 <line x1="116.3" y1="195.9" x2="116.3" y2="245.2" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="112.8" y="198.3" width="7.0" height="38.5" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:8">
 <line x1="131.0" y1="177.4" x2="131.0" y2="215.2" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="127.5" y="180.2" width="7.0" height="22.2" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:9">
 <line x1="145.7" y1="157.1" x2="145.7" y2="188.7" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="142.2" y="161.8" width="7.0" height="17.0" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:10">
 <line x1="160.4" y1="156.7" x2="160.4" y2="196.3" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="156.9" y="163.2" width="7.0" height="20.9" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:11">
 <line x1="175.1" y1="145.5" x2="175.1" y2="187.4" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="171.6" y="160.0" width="7.0" height="19.2" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:12">
 <line x1="189.8" y1="137.9" x2="189.8" y2="167.7" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="186.3" y="142.8" width="7.0" height="12.0" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:13">
 <line x1="204.5" y1="128.5" x2="204.5" y2="153.6" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="201.0" y="137.9" width="7.0" height="2.6" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:14">
 <line x1="219.2" y1="97.2" x2="219.2" y2="144.9" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="215.7" y="110.3" width="7.0" height="26.1" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:15">
 <line x1="233.9" y1="77.6" x2="233.9" y2="124.5" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="230.4" y="88.0" width="7.0" height="24.1" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:16">
 <line x1="248.6" y1="84.9" x2="248.6" y2="114.8" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="245.1" y="92.0" width="7.0" height="9.3" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:17">
 <line x1="263.4" y1="68.7" x2="263.4" y2="115.8" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="259.9" y="75.5" width="7.0" height="30.7" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:18">
 <line x1="278.1" y1="50.7" x2="278.1" y2="84.1" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="274.6" y="58.5" width="7.0" height="16.2" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:19">
 <line x1="292.8" y1="44.6" x2="292.8" y2="74.3" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="289.3" y="51.8" width="7.0" height="10.3" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:20">
 <line x1="307.5" y1="43.8" x2="307.5" y2="71.2" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="304.0" y="53.4" width="7.0" height="12.4" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:21">
 <line x1="322.2" y1="64.0" x2="322.2" y2="79.5" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="318.7" y="69.5" width="7.0" height="7.0" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:22">
 <line x1="336.9" y1="51.5" x2="336.9" y2="88.5" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="333.4" y="60.1" width="7.0" height="15.6" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:23">
 <line x1="351.6" y1="28.8" x2="351.6" y2="66.2" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="348.1" y="35.2" width="7.0" height="20.5" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:24">
 <line x1="366.3" y1="30.6" x2="366.3" y2="82.8" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="362.8" y="37.0" width="7.0" height="43.3" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:25">
 <line x1="381.0" y1="68.0" x2="381.0" y2="104.6" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="377.5" y="78.1" width="7.0" height="18.2" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:26">
 <line x1="395.7" y1="53.8" x2="395.7" y2="96.0" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="392.2" y="61.1" width="7.0" height="31.8" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:27">
 <line x1="410.4" y1="41.0" x2="410.4" y2="74.1" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="406.9" y="49.3" width="7.0" height="10.5" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:28">
 <line x1="425.1" y1="38.2" x2="425.1" y2="55.8" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="421.6" y="48.0" width="7.0" height="4.4" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:29">
 <line x1="439.8" y1="23.6" x2="439.8" y2="59.9" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="436.3" y="30.2" width="7.0" height="18.6" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:30">
 <line x1="454.5" y1="19.2" x2="454.5" y2="37.5" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="451.0" y="23.2" width="7.0" height="9.4" fill="#E5372B" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:31">
 <line x1="469.2" y1="12.0" x2="469.2" y2="99.3" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="465.7" y="22.7" width="7.0" height="63.8" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:32">
 <line x1="483.9" y1="76.4" x2="483.9" y2="113.9" stroke="#3B7BD6" stroke-width="1.2"/>
 <rect x="480.4" y="86.6" width="7.0" height="18.9" fill="#3B7BD6" rx="0.8"/>
+</g>
+<g class="cdl" style="--i:33">
 <line x1="498.6" y1="49.0" x2="498.6" y2="111.1" stroke="#E5372B" stroke-width="1.2"/>
 <rect x="495.1" y="63.7" width="7.0" height="37.0" fill="#E5372B" rx="0.8"/>
 </g>
-<line x1="6" y1="63.7" x2="506.0" y2="63.7" stroke="rgba(229,55,43,.5)" stroke-width="1" stroke-dasharray="3 4"/>
-<circle cx="498.6" cy="63.7" r="2.6" fill="#FF4A3A"/>
+<line class="lastln" x1="6" y1="63.7" x2="506.0" y2="63.7" stroke="rgba(229,55,43,.5)" stroke-width="1" stroke-dasharray="3 4"/>
+<g class="live">
+<circle class="glow" cx="498.6" cy="63.7" r="3.4" fill="#FF4A3A" opacity="0.45"/>
+<circle class="dot" cx="498.6" cy="63.7" r="2.6" fill="#FF4A3A"/>
+</g>
+<g class="lasttag">
 <rect x="508.0" y="54.7" width="52" height="18" rx="2" fill="#E5372B"/>
-<text x="534.0" y="67.3" font-family="Pretendard, sans-serif" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">21,833.91</text>
+<text class="lastpx" x="534.0" y="67.3" font-family="Pretendard, sans-serif" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">21,833.91</text>
+</g>
 <g font-family="Pretendard, sans-serif" font-size="8.6" fill="#5F6A79" text-anchor="start">
 <text x="511.0" y="15.0">21,923</text>
 <text x="511.0" y="135.0">21,716</text>
@@ -777,7 +906,7 @@ section[id]{scroll-margin-top:84px}
 
 <!-- ============ trust ============ -->
 <div class="trust">
-  <div class="wrap trust-in">
+  <div class="wrap trust-in stagger" data-step="70">
     <div><b>MetaTrader 5</b><span>라이선스 인가 거래소</span></div>
     <div><b>iFX EXPO 2024</b><span>방콕 참가</span></div>
     <div><b>국제 금융감독청</b><span>등록 확인</span></div>
@@ -820,7 +949,7 @@ section[id]{scroll-margin-top:84px}
       <h2 id="features-title">처음 시작하는 분께 필요한 네 가지</h2>
       <p>플랫폼 설치부터 리스크 관리, 비용 안내, 사후 관리까지. 한 번의 상담으로 전부 세팅해 드립니다.</p>
     </div>
-    <div class="cells reveal">
+    <div class="cells stagger">
       <article class="cell">
         <h3>MT5 설치와 차트 세팅</h3>
         <p>PC(HTS)와 모바일(MTS)을 함께 지원합니다. 검증된 차트 템플릿과 보조지표 세팅을 그대로 받아 시작하세요.</p>
@@ -853,8 +982,8 @@ section[id]{scroll-margin-top:84px}
       <h2 id="fees-title">같은 1계약, <em>비용은 20배</em> 다릅니다</h2>
       <p>수수료와 증거금은 수익률을 결정하는 고정 비용입니다. 숫자로 직접 비교해 보세요.</p>
     </div>
-    <div class="fee">
-      <div class="reveal">
+    <div class="fee stagger">
+      <div class="from-l">
         <div class="stat">
           <span class="lbl">해외선물 왕복 수수료</span>
           <div class="line"><span class="old num">$15</span><span class="arw">→</span><span class="new num">$1~2<i>진입 1회</i></span></div>
@@ -862,11 +991,11 @@ section[id]{scroll-margin-top:84px}
         </div>
         <div class="stat">
           <span class="lbl">0.01계약 증거금</span>
-          <div class="line"><span class="old num">25만 원</span><span class="arw">→</span><span class="new num">1만 3천 원<i>약 20배</i></span></div>
+          <div class="line"><span class="old num">25만 원</span><span class="arw">→</span><span class="new num">1만 3천 원<i>약 <span data-count="20">20</span>배</i></span></div>
           <p>1계약 기준 2,500만 원 → 130만 원. 작은 금액으로도 같은 시장에 참여할 수 있습니다.</p>
         </div>
       </div>
-      <div class="cmp reveal">
+      <div class="cmp stagger from-r" data-step="60">
         <div class="cmp-row head"><div class="k">구분</div><div class="a">국내 증권사</div><div class="b">이지스퀘어</div></div>
         <div class="cmp-row"><div class="k">왕복 수수료</div><div class="a num">약 $15</div><div class="b">진입 시 1회</div></div>
         <div class="cmp-row"><div class="k">1계약 증거금</div><div class="a num">2,500만 원</div><div class="b num">130만 원</div></div>
@@ -886,8 +1015,8 @@ section[id]{scroll-margin-top:84px}
       <h2 id="safety-title">불법 대여업체와 <em>확실히</em> 다릅니다</h2>
       <p>입금 계좌가 계속 바뀌거나, 출금을 매번 요청해야 한다면 정식 거래소가 아닙니다.</p>
     </div>
-    <div class="safe">
-      <div class="panel bad reveal">
+    <div class="safe stagger" data-step="120">
+      <div class="panel bad from-l">
         <div class="panel-h"><h3>불법 대여업체</h3><span class="mark">주의</span></div>
         <ul class="plist">
           <li><span class="x" aria-hidden="true">×</span>출처를 알 수 없는 HTS 프로그램을 메일·카톡으로 전송</li>
@@ -899,7 +1028,7 @@ section[id]{scroll-margin-top:84px}
         </ul>
         <p class="after">계좌 명의와 입금 계좌가 다르다면 먼저 확인하세요.</p>
       </div>
-      <div class="panel good reveal">
+      <div class="panel good from-r">
         <div class="panel-h"><h3>이지스퀘어 정식 경로</h3><span class="mark">정식</span></div>
         <ul class="plist">
           <li><span class="ck" aria-hidden="true"></span><span><b>메타트레이더5 정식 프로그램</b> — PC·모바일 모두 공식 배포</span></li>
@@ -923,7 +1052,7 @@ section[id]{scroll-margin-top:84px}
       <h2 id="markets-title">하나의 계좌로 <em>네 개의 시장</em></h2>
       <p>지수·외환·귀금속·원자재를 MT5 한 화면에서. 최소 0.01계약부터 거래할 수 있습니다.</p>
     </div>
-    <div class="tbl reveal">
+    <div class="tbl stagger" data-step="70">
       <div class="tbl-row hd"><div class="c1">종목군</div><div class="c2">대표 상품</div><div class="c3">거래 시간</div><div class="c4">최소 주문</div></div>
       <div class="tbl-row"><div class="c1">지수선물</div><div class="c2">나스닥100 · S&amp;P500 · 항셍</div><div class="c3">24시간 (주말 휴장)</div><div class="c4">0.01계약</div></div>
       <div class="tbl-row"><div class="c1">외환</div><div class="c2">EUR/USD · USD/JPY · GBP/USD</div><div class="c3">24시간 (주중)</div><div class="c4">0.01랏</div></div>
@@ -942,7 +1071,7 @@ section[id]{scroll-margin-top:84px}
       <h2 id="process-title">상담부터 사후 관리까지 <em>6단계</em></h2>
       <p>혼자 하지 않아도 됩니다. 매니저가 순서대로 안내합니다.</p>
     </div>
-    <div class="steps reveal">
+    <div class="steps stagger" data-step="80">
       <article class="step"><span class="no">01</span><h3>상담</h3><p>투자 경험과 자금 계획을 먼저 확인합니다. 무리한 권유 없이 가능한 범위부터 설계합니다.</p></article>
       <article class="step"><span class="no">02</span><h3>계좌 개설</h3><p>본인 명의 정식 계좌를 개설합니다. 필요한 서류와 절차를 한 단계씩 안내합니다.</p></article>
       <article class="step"><span class="no">03</span><h3>입출금 안내</h3><p>고정된 입금 계좌와 입출금 절차를 확인합니다. 출금은 직접, 원할 때 가능합니다.</p></article>
@@ -962,10 +1091,10 @@ section[id]{scroll-margin-top:84px}
         <h2 id="live-title">지금도 상담이 <em>이어지고 있습니다</em></h2>
         <p>카카오톡 채널은 24시간 열려 있습니다. 남겨 주신 연락처로 담당 매니저가 영업일 기준 24시간 안에 연락드립니다.</p>
       </div>
-      <div class="mini">
+      <div class="mini stagger" data-step="80">
         <div><b>24시간</b><span>카톡 채널 접수</span></div>
         <div><b>1:1</b><span>전담 매니저 배정</span></div>
-        <div><b>$100</b><span>가입 크레딧</span></div>
+        <div><b><span data-count="100" data-pre="$">$100</span></b><span>가입 크레딧</span></div>
       </div>
     </div>
     <div class="live-card reveal">
@@ -987,11 +1116,11 @@ section[id]{scroll-margin-top:84px}
         <div class="credit-h"><span class="dot" aria-hidden="true"></span>신규 회원 혜택<span class="rt">가입 후 즉시</span></div>
         <div class="credit-row">
           <div class="t">신규 가입 크레딧<small>계좌 개설 완료 시</small></div>
-          <div class="v num">$100</div>
+          <div class="v num"><span data-count="100" data-pre="$">$100</span></div>
         </div>
         <div class="credit-row">
           <div class="t">첫 거래 추가 크레딧<small>첫 주문 체결 기준</small></div>
-          <div class="v num">+5%</div>
+          <div class="v num"><span data-count="5" data-pre="+" data-suf="%">+5%</span></div>
         </div>
         <div class="credit-row">
           <div class="t">반복 참여<small>회차별 한도 내에서</small></div>
@@ -1046,7 +1175,7 @@ section[id]{scroll-margin-top:84px}
           </label>
           <span class="err" data-err="agree"></span>
         </div>
-        <button type="submit" class="btn btn-primary">상담 신청하고 $100 받기</button>
+        <button type="submit" class="btn btn-primary shine">상담 신청하고 $100 받기</button>
         <p class="form-foot">입력하신 정보는 상담 목적으로만 사용되며, 동의 없이 제3자에게 제공되지 않습니다.</p>
       </form>
     </div>
@@ -1184,7 +1313,7 @@ section[id]{scroll-margin-top:84px}
       <div class="ev-row"><span class="t">첫 거래 추가 크레딧</span><span class="v num">+5%</span></div>
       <div class="ev-row"><span class="t">회차별 최대 한도</span><span class="v num">$5,000</span></div>
     </div>
-    <button class="btn btn-primary ev-cta" data-close data-go="apply">혜택 받고 상담 신청하기</button>
+    <button class="btn btn-primary ev-cta shine" data-close data-go="apply">혜택 받고 상담 신청하기</button>
     <div class="ev-foot">
       <label class="ev-today"><input type="checkbox" id="evToday">오늘 하루 보지 않기</label>
       <span>미디어플로우 × 이지스퀘어</span>
@@ -1252,7 +1381,7 @@ section[id]{scroll-margin-top:84px}
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+<noscript><style>.reveal,.reveal-l,.reveal-r{opacity:1;transform:none}.stagger>*{opacity:1;transform:none}.term-chart svg .grid,.term-chart svg .vlm,.term-chart svg .cdl,.term-chart svg .lastln,.term-chart svg .lasttag,.term-chart svg .live{opacity:1;transform:none}</style></noscript>
 
 <script>
 (function () {
@@ -1260,15 +1389,27 @@ section[id]{scroll-margin-top:84px}
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
-  /* ---- header + sticky bar ---- */
-  var hdr = $('#hdr'), sbar = $('#sbar');
-  function onScroll() {
+  /* ---- header + sticky bar + scroll progress ---- */
+  var hdr = $('#hdr'), sbar = $('#sbar'), progBar = $('#progBar');
+  var docMax = 1, scrollQueued = false;
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  function measureDoc() { docMax = Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
+  function paintScroll() {
+    scrollQueued = false;
     var y = window.pageYOffset || document.documentElement.scrollTop;
     if (hdr) hdr.classList.toggle('scrolled', y > 8);
     if (sbar) sbar.classList.toggle('show', y > 640);
+    if (progBar) {
+      var p = Math.min(1, Math.max(0, y / docMax));
+      progBar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+    }
   }
+  function onScroll() { if (scrollQueued) return; scrollQueued = true; requestAnimationFrame(paintScroll); }
+  measureDoc();
   window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  window.addEventListener('resize', function () { measureDoc(); onScroll(); }, { passive: true });
+  window.addEventListener('load', measureDoc);
+  paintScroll();
 
   var applySec = document.getElementById('apply');
   if (applySec && sbar && 'IntersectionObserver' in window) {
@@ -1277,32 +1418,57 @@ section[id]{scroll-margin-top:84px}
     }, { threshold: 0.14 }).observe(applySec);
   }
 
-  /* ---- reveal ---- */
-  if ('IntersectionObserver' in window) {
+  /* ---- reveal / staggered entrance ---- */
+  function enterGroup(g) {
+    var step = parseInt(g.getAttribute('data-step') || '90', 10);
+    var kids = Array.prototype.slice.call(g.children);
+    var last = 0;
+    kids.forEach(function (k, i) {
+      var d = reduce ? 0 : i * step;
+      k.style.transitionDelay = d + 'ms';
+      if (d > last) last = d;
+    });
+    g.classList.add('in');
+    if (last) {
+      setTimeout(function () {
+        kids.forEach(function (k) { k.style.transitionDelay = ''; });
+      }, last + 950);
+    }
+  }
+  if ('IntersectionObserver' in window && !reduce) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+        if (!en.isIntersecting) return;
+        if (en.target.classList.contains('stagger')) enterGroup(en.target);
+        else en.target.classList.add('in');
+        io.unobserve(en.target);
       });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    $$('.reveal').forEach(function (el) { io.observe(el); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+    $$('.reveal,.reveal-l,.reveal-r,.stagger').forEach(function (el) { io.observe(el); });
   } else {
-    $$('.reveal').forEach(function (el) { el.classList.add('in'); });
+    $$('.reveal,.reveal-l,.reveal-r').forEach(function (el) { el.classList.add('in'); });
+    $$('.stagger').forEach(function (g) { g.classList.add('in'); });
   }
 
   /* ---- count up ---- */
+  function countText(el, v) {
+    return (el.getAttribute('data-pre') || '') + v.toLocaleString('en-US') + (el.getAttribute('data-suf') || '');
+  }
+  function setFinal(el) {
+    el.textContent = countText(el, Math.round(parseFloat(el.getAttribute('data-count')) || 0));
+  }
   function countUp(el) {
     var to = parseFloat(el.getAttribute('data-count')) || 0;
-    var t0 = null, dur = 1400;
+    var t0 = null, dur = 1100;
     function step(t) {
       if (!t0) t0 = t;
       var p = Math.min(1, (t - t0) / dur);
       var e = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(to * e).toLocaleString('en-US');
+      el.textContent = countText(el, Math.round(to * e));
       if (p < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduce && 'IntersectionObserver' in window) {
     var cio = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
@@ -1311,9 +1477,57 @@ section[id]{scroll-margin-top:84px}
     }, { threshold: 0.6 });
     $$('[data-count]').forEach(function (el) { cio.observe(el); });
   } else {
-    $$('[data-count]').forEach(function (el) {
-      el.textContent = Number(el.getAttribute('data-count')).toLocaleString('en-US');
-    });
+    $$('[data-count]').forEach(setFinal);
+  }
+
+  /* ---- hero terminal: candle drawing ---- */
+  var termSvg = document.querySelector('.term-chart svg');
+  var termWrap = document.querySelector('.term-wrap');
+  function drawChart() { if (termSvg) termSvg.classList.add('is-drawn'); }
+  if (termSvg) {
+    if (reduce) {
+      drawChart();
+    } else if ('IntersectionObserver' in window && termWrap) {
+      var tio = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting) { setTimeout(drawChart, 380); tio.disconnect(); }
+        });
+      }, { threshold: 0.15 });
+      tio.observe(termWrap);
+    } else {
+      setTimeout(drawChart, 500);
+    }
+  }
+
+  /* ---- hero terminal: live quote ticks ---- */
+  var pxEl = $('.term-px > b'), chgEl = $('.term-px .chg');
+  var askEl = $('.term-ord .buy .num'), bidEl = $('.term-ord .sell .num'), tagEl = $('.term-chart .lastpx');
+  function fmt2(v) { return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function toNum(s) { return parseFloat(String(s).replace(/,/g, '').replace(/[^0-9.+-]/g, '')) || 0; }
+  function flash(el) {
+    if (!el) return;
+    el.classList.remove('tick');
+    void el.offsetWidth;
+    el.classList.add('tick');
+  }
+  if (pxEl && !reduce) {
+    var livePx = toNum(pxEl.textContent);
+    var prevClose = livePx - toNum(chgEl ? chgEl.textContent.trim().split(/\s+/)[0] : 0);
+    var tick = function () {
+      var dir = Math.random() < 0.5 ? -1 : 1;
+      var mag = Math.random() < 0.16 ? 0.7 + Math.random() * 0.8 : 0.1 + Math.random() * 0.45;
+      livePx = Math.round((livePx + dir * mag) * 100) / 100;
+      var chg = livePx - prevClose;
+      var pct = prevClose ? chg / prevClose * 100 : 0;
+      pxEl.textContent = fmt2(livePx);
+      if (chgEl) chgEl.textContent = (chg >= 0 ? '+' : '') + fmt2(chg) + ' (' + (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%)';
+      if (askEl) askEl.textContent = fmt2(livePx + 0.9);
+      if (bidEl) bidEl.textContent = fmt2(livePx - 0.9);
+      if (tagEl) tagEl.textContent = fmt2(livePx);
+      flash(pxEl); flash(askEl); flash(bidEl);
+      setTimeout(tick, 2000 + Math.random() * 1200);
+    };
+    setTimeout(tick, 1500);
   }
 
   /* ---- live list ---- */
