@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://ezs2mt5.com/sitemap.xml
