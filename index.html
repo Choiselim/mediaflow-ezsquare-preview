@@ -1997,10 +1997,22 @@ section[id]{scroll-margin-top:84px}
   paintScroll();
 
   var applySec = document.getElementById('apply');
-  if (applySec && sbar && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function (entries) {
-      sbar.classList.toggle('at-form', entries[0].isIntersecting);
-    }, { threshold: 0.14 }).observe(applySec);
+  var footSec = document.querySelector('footer.ft');
+  if (sbar && 'IntersectionObserver' in window) {
+    var sbarHide = { form: false, foot: false };
+    function syncSbarHide() { sbar.classList.toggle('at-form', sbarHide.form || sbarHide.foot); }
+    if (applySec) {
+      new IntersectionObserver(function (entries) {
+        sbarHide.form = entries[0].isIntersecting;
+        syncSbarHide();
+      }, { threshold: 0.14 }).observe(applySec);
+    }
+    if (footSec) {
+      new IntersectionObserver(function (entries) {
+        sbarHide.foot = entries[0].isIntersecting;
+        syncSbarHide();
+      }, { threshold: 0.02 }).observe(footSec);
+    }
   }
 
   /* ---- reveal / staggered entrance ---- */
