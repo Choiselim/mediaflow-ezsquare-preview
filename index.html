@@ -1947,7 +1947,7 @@ section[id]{scroll-margin-top:84px}
       <div><span>신청 혜택</span><strong>가입 $100 + 첫 거래 5%</strong></div>
       <div id="doneCtxRow" hidden><span>선택 조건</span><strong id="doneCtx">-</strong></div>
     </div>
-    <p class="demo-note">※ 이 페이지는 디자인 시안입니다. 실제 상담 접수는 서버로 전송되지 않으며, 운영 시 폼 연동이 필요합니다.</p>
+    <p class="demo-note" id="doneDemoNote">※ 이 페이지는 디자인 시안입니다. 실제 상담 접수는 서버로 전송되지 않으며, 운영 시 폼 연동이 필요합니다.</p>
     <div class="m-actions"><button class="btn btn-primary" data-close>확인</button></div>
   </div>
 </div>
@@ -2263,6 +2263,7 @@ section[id]{scroll-margin-top:84px}
      배포: 웹 앱 > 액세스 권한 '모든 사용자' → URL을 아래 상수에 넣으면 바로 접수됩니다.
      비어 있으면 시안 모드로, 화면상 접수 완료 UX만 동작합니다. */
   var GOOGLE_SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwCyQD4mx0K51Hjnzsn5RvPeOLoFimaBWs2srY77-2dRIXQAHejpHwx6jPVNU5VH_AEsA/exec';
+  if (GOOGLE_SHEET_ENDPOINT) { var _ddn = document.getElementById('doneDemoNote'); if (_ddn) _ddn.hidden = true; }
 
   function pad2(v) { return (v < 10 ? '0' : '') + v; }
   function stampNow() {
